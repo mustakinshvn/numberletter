@@ -1,0 +1,61 @@
+public class SimpleNumberLetterThreadExample {
+    public static void main(String[] args) {
+        Object lock = new Object();
+        
+        Thread numberThread = new Thread(new NumberPrinter(lock));
+        Thread letterThread = new Thread(new LetterPrinter(lock));
+
+        numberThread.start();
+        letterThread.start();
+    }
+}
+
+class NumberPrinter implements Runnable {
+    private final Object lock;
+
+    public NumberPrinter(Object lock) {
+        this.lock = lock;
+    }
+
+    @Override
+    public void run() {
+        synchronized (lock) {
+            for (int i = 1; i <= 26; i++) {
+                System.out.print(i + " ");
+                lock.notify(); // Notify the other thread
+                try {
+                    if (i < 26) {
+                        lock.wait(); // Wait for the other thread to notify
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
+
+class LetterPrinter implements Runnable {
+    private final Object lock;
+
+    public LetterPrinter(Object lock) {
+        this.lock = lock;
+    }
+
+    @Override
+    public void run() {
+        synchronized (lock) {
+            for (char c = 'a'; c <= 'z'; c++) {
+                System.out.print(c + " ");
+                lock.notify(); // Notify the other thread
+                try {
+                    if (c < 'z') {
+                        lock.wait(); // Wait for the other thread to notify
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
